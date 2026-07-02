@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drawoza</title>
+    <link rel="icon" type="image/png" href="images/drawoza.png" />
+    <link rel="apple-touch-icon" href="images/drawoza.png" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <main class="app">
+        <div class="toolbar" aria-label="Drawing toolbar">
+            <button class="tool" data-tool="select" title="Move / Select (V)" aria-label="Move / Select">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 11V6a2 2 0 0 0-4 0v4" />
+                    <path d="M14 10V4a2 2 0 0 0-4 0v8" />
+                    <path d="M10 12V6a2 2 0 0 0-4 0v8" />
+                    <path
+                        d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.35l-3.6-3.6a2 2 0 0 1 2.82-2.83L7 15" />
+                </svg>
+            </button>
+            <button class="tool active" data-tool="pen" title="Pen (P)" aria-label="Pen">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+            </button>
+            <button class="tool" data-tool="line" title="Line (L)" aria-label="Line">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 18 18 6" />
+                </svg>
+            </button>
+            <button class="tool" data-tool="rect" title="Square / Rectangle (R)" aria-label="Square / Rectangle">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                </svg>
+            </button>
+            <button class="tool" data-tool="circle" title="Circle / Ellipse (C)" aria-label="Circle / Ellipse">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                </svg>
+            </button>
+            <button class="tool" data-tool="brush" title="Clean / Brush (B)" aria-label="Clean / Brush">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m7 21-4.3-4.3a2.4 2.4 0 0 1 0-3.4L13.3 2.7a2.4 2.4 0 0 1 3.4 0l4.6 4.6a2.4 2.4 0 0 1 0 3.4L11 21" />
+                    <path d="M22 21H7" />
+                    <path d="m5 11 8 8" />
+                </svg>
+            </button>
+            <button class="tool" data-tool="text" title="Text (T)">Aa</button>
+
+            <span class="separator"></span>
+
+            <label title="Stroke color">
+                <input id="colorPicker" type="color" value="#000000" />
+            </label>
+
+            <label class="compact" title="Stroke width">
+                <input id="strokeWidth" type="number" min="1" max="40" value="6" />
+            </label>
+
+            <select id="fontFamily" class="font-control" title="Font family">
+                <option value="Google Sans">Google Sans</option>
+                <option value="Arial">Arial</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times</option>
+                <option value="Courier New">Courier</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+
+            <label class="compact font-control" title="Font size">
+                <input id="fontSize" type="number" min="8" max="160" value="32" />
+            </label>
+        </div>
+
+        <div class="paper-wrap" id="paperWrap">
+            <canvas id="paper" width="1600" height="1000"></canvas>
+            <textarea id="textEditor" rows="1" spellcheck="false"></textarea>
+        </div>
+
+        <div class="bottom-controls">
+            <button id="zoomOut" title="Zoom out">−</button>
+            <span id="zoomLabel">100%</span>
+            <button id="zoomIn" title="Zoom in">+</button>
+            <span class="separator"></span>
+            <button id="undoBtn" title="Back / Undo (Ctrl+Z)">↶</button>
+            <button id="redoBtn" title="Next / Redo (Ctrl+Y)">↷</button>
+        </div>
+
+        <a class="credit" href="https://github.com/mtskiyi" target="_blank" rel="noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                    d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.16c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.05 0 0 .97-.31 3.17 1.18A10.94 10.94 0 0 1 12 6c.98 0 1.95.13 2.87.38 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.13v3.16c0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+            </svg>
+            GitHub @mtskiyi
+        </a>
+
+        <div id="contextMenu" class="context-menu" role="menu" aria-hidden="true">
+            <button type="button" data-action="copy" role="menuitem">Copy</button>
+            <button type="button" data-action="cut" role="menuitem">Cut</button>
+            <button type="button" data-action="paste" role="menuitem">Paste</button>
+            <span class="context-separator"></span>
+            <button type="button" data-action="undo" role="menuitem">Undo</button>
+            <button type="button" data-action="redo" role="menuitem">Redo</button>
+            <span class="context-separator"></span>
+            <button type="button" data-action="delete" role="menuitem">Delete</button>
+        </div>
+
+        <div id="projectPrompt" class="project-prompt" aria-hidden="true">
+            <div class="project-dialog" role="dialog" aria-modal="true" aria-labelledby="projectPromptTitle">
+                <h2 id="projectPromptTitle">Open previous drawing?</h2>
+                <p>You have a saved drawing on this browser.</p>
+                <div class="project-actions">
+                    <button type="button" id="newProjectBtn">New project</button>
+                    <button type="button" id="oldProjectBtn">Old project</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="scripts/state.js"></script>
+    <script src="scripts/storage.js"></script>
+    <script src="scripts/canvas.js"></script>
+    <script src="scripts/events.js"></script>
+    <script src="scripts/init.js"></script>
+</body>
+
+</html>

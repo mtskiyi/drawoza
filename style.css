@@ -1,0 +1,353 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: "Google Sans", "Product Sans", Roboto, Arial, sans-serif;
+  background: #f7f7fb;
+  color: #1f1f29;
+}
+
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e7e7ef;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(28, 28, 38, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button,
+select,
+input[type="number"] {
+  height: 34px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #242438;
+  outline: none;
+}
+
+button {
+  min-width: 36px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+button svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+button:hover,
+.tool.active {
+  background: #ece9ff;
+  color: #4f46e5;
+}
+
+button:disabled:hover {
+  background: transparent;
+  color: #242438;
+}
+
+input[type="color"] {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.compact input {
+  width: 56px;
+  padding: 0 8px;
+  background: #f3f3f8;
+}
+
+select {
+  width: 130px;
+  padding: 0 8px;
+  background: #f3f3f8;
+}
+
+.font-control {
+  display: none;
+}
+
+.toolbar.text-tool .font-control {
+  display: inline-flex;
+}
+
+.toolbar.text-tool select.font-control {
+  display: block;
+}
+
+.separator {
+  width: 1px;
+  height: 26px;
+  margin: 0 4px;
+  background: #e3e3eb;
+}
+
+.paper-wrap {
+  position: relative;
+  width: 1600px;
+  height: 1000px;
+  transform-origin: center center;
+  transition: transform 180ms ease-out;
+  box-shadow: 0 20px 60px rgba(18, 18, 28, 0.08);
+}
+
+#paper {
+  display: block;
+  width: 1600px;
+  height: 1000px;
+  background: #ffffff;
+  cursor: crosshair;
+}
+
+#paper.select-mode {
+  cursor: move;
+}
+
+#textEditor {
+  position: absolute;
+  display: none;
+  z-index: 20;
+  min-width: 120px;
+  max-width: 800px;
+  min-height: 44px;
+  resize: both;
+  overflow: hidden;
+  border: 1px dashed #4f46e5;
+  outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 2px 4px;
+  font-family: "Google Sans", "Product Sans", Roboto, Arial, sans-serif;
+  line-height: 1.2;
+}
+
+.bottom-controls {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e7e7ef;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(28, 28, 38, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+#zoomLabel {
+  min-width: 54px;
+  text-align: center;
+  font-size: 14px;
+  color: #5b5b6d;
+}
+
+.credit {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d8d8e4;
+  box-shadow: 0 10px 30px rgba(28, 28, 38, 0.08);
+  color: #242438;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    background 180ms ease;
+}
+
+.credit svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex: 0 0 auto;
+  transition: transform 180ms ease;
+}
+
+.credit:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+  border-color: #c8c5ff;
+  box-shadow: 0 16px 34px rgba(79, 70, 229, 0.18);
+  color: #4f46e5;
+}
+
+.credit:hover svg {
+  transform: rotate(-8deg) scale(1.12);
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 30;
+  display: none;
+  min-width: 150px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d8d8e4;
+  border-radius: 8px;
+  box-shadow: 0 16px 42px rgba(28, 28, 38, 0.16);
+}
+
+.context-menu.open {
+  display: grid;
+  gap: 2px;
+}
+
+.context-menu button {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.context-menu button:hover:not(:disabled) {
+  background: #ece9ff;
+  color: #4f46e5;
+}
+
+.context-separator {
+  height: 1px;
+  margin: 4px 2px;
+  background: #e3e3eb;
+}
+
+.project-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(31, 31, 41, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.project-prompt.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.project-dialog {
+  width: min(380px, 100%);
+  padding: 18px;
+  border: 1px solid #e0e0ea;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 20px 60px rgba(18, 18, 28, 0.22);
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transition:
+    opacity 180ms ease,
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.project-prompt.open .project-dialog {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.project-dialog h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.project-dialog p {
+  margin: 0 0 18px;
+  color: #5b5b6d;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.project-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.project-actions button {
+  min-width: 96px;
+  padding: 0 14px;
+  border-radius: 7px;
+  background: #f3f3f8;
+  font-size: 14px;
+}
+
+.project-actions #oldProjectBtn {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.project-actions button:hover {
+  background: #ece9ff;
+  color: #4f46e5;
+}
+
+.project-actions #oldProjectBtn:hover {
+  background: #4338ca;
+  color: #ffffff;
+}
