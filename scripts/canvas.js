@@ -295,8 +295,14 @@ function render() {
   drawSelection(selectedIndex);
 }
 
+function isSelectableObject(object) {
+  return object?.type !== 'brush';
+}
+
 function hitTest(point) {
   for (let i = objects.length - 1; i >= 0; i--) {
+    if (!isSelectableObject(objects[i])) continue;
+
     const bounds = getBounds(objects[i]);
     const tolerance = 12;
 
@@ -749,13 +755,13 @@ function endViewportGesture() {
 }
 
 function copySelection() {
-  if (selectedIndex < 0) return;
+  if (selectedIndex < 0 || !isSelectableObject(objects[selectedIndex])) return;
 
   copiedObject = clone(objects[selectedIndex]);
 }
 
 function cutSelection() {
-  if (selectedIndex < 0) return;
+  if (selectedIndex < 0 || !isSelectableObject(objects[selectedIndex])) return;
 
   copiedObject = clone(objects[selectedIndex]);
   objects.splice(selectedIndex, 1);
@@ -785,7 +791,7 @@ function pasteSelection(point = null) {
 }
 
 function deleteSelection() {
-  if (selectedIndex < 0) return;
+  if (selectedIndex < 0 || !isSelectableObject(objects[selectedIndex])) return;
 
   objects.splice(selectedIndex, 1);
   selectedIndex = -1;
