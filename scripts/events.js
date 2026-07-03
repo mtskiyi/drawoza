@@ -86,6 +86,8 @@ canvas.addEventListener('pointerdown', (event) => {
       points: [point],
       width: settings.width,
     };
+    eraseChanged = eraseObjectsAlongSegment(point, point, settings.width);
+    render();
   }
 
   if (tool === 'rect') {
@@ -190,6 +192,12 @@ canvas.addEventListener('pointermove', (event) => {
 
     if (currentObject.type === 'path' || distance >= 3) {
       currentObject.points.push(point);
+
+      if (currentObject.type === 'brush') {
+        eraseChanged =
+          eraseObjectsAlongSegment(lastPoint, point, currentObject.width || 2) ||
+          eraseChanged;
+      }
     }
   }
 
@@ -249,6 +257,19 @@ canvas.addEventListener('pointerup', (event) => {
   }
 
   if (isDrawing && currentObject) {
+    if (currentObject.type === 'brush') {
+      currentObject = null;
+      isDrawing = false;
+
+      if (eraseChanged) {
+        saveHistory();
+      }
+
+      render();
+      eraseChanged = false;
+      return;
+    }
+
     objects.push(currentObject);
     selectedIndex = -1;
 

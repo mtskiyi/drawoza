@@ -41,6 +41,7 @@ let resizeStartObject = null;
 let editingTextIndex = -1;
 let activeTouchPointers = new Map();
 let viewportGesture = null;
+let eraseChanged = false;
 
 const minZoom = 0.18;
 const maxZoom = 2.5;

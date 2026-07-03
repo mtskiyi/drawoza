@@ -299,8 +299,202 @@ function isSelectableObject(object) {
   return object?.type !== 'brush';
 }
 
+function distanceToSegment(point, start, end) {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const lengthSquared = dx * dx + dy * dy;
+
+  if (lengthSquared === 0) {
+    return Math.hypot(point.x - start.x, point.y - start.y);
+  }
+
+  const t = Math.max(
+    0,
+    Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared)
+  );
+  const x = start.x + t * dx;
+  const y = start.y + t * dy;
+
+  return Math.hypot(point.x - x, point.y - y);
+}
+
+function segmentIntersectsSegment(a, b, c, d) {
+  const direction = (p1, p2, p3) =>
+    (p3.x - p1.x) * (p2.y - p1.y) - (p2.x - p1.x) * (p3.y - p1.y);
+  const onSegment = (p1, p2, p3) =>
+    Math.min(p1.x, p2.x) <= p3.x &&
+    p3.x <= Math.max(p1.x, p2.x) &&
+    Math.min(p1.y, p2.y) <= p3.y &&
+    p3.y <= Math.max(p1.y, p2.y);
+  const d1 = direction(c, d, a);
+  const d2 = direction(c, d, b);
+  const d3 = direction(a, b, c);
+  const d4 = direction(a, b, d);
+
+  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+    return true;
+  }
+
+  return (
+    (d1 === 0 && onSegment(c, d, a)) ||
+    (d2 === 0 && onSegment(c, d, b)) ||
+    (d3 === 0 && onSegment(a, b, c)) ||
+    (d4 === 0 && onSegment(a, b, d))
+  );
+}
+
+function distanceBetweenSegments(a, b, c, d) {
+  if (segmentIntersectsSegment(a, b, c, d)) return 0;
+
+  return Math.min(
+    distanceToSegment(a, c, d),
+    distanceToSegment(b, c, d),
+    distanceToSegment(c, a, b),
+    distanceToSegment(d, a, b)
+  );
+}
+
+function pointInsideBounds(point, bounds) {
+  return (
+    point.x >= bounds.x &&
+    point.x <= bounds.x + bounds.w &&
+    point.y >= bounds.y &&
+    point.y <= bounds.y + bounds.h
+  );
+}
+
+function segmentIntersectsBounds(start, end, bounds, tolerance = 0) {
+  const expanded = {
+    x: bounds.x - tolerance,
+    y: bounds.y - tolerance,
+    w: bounds.w + tolerance * 2,
+    h: bounds.h + tolerance * 2,
+  };
+  const topLeft = { x: expanded.x, y: expanded.y };
+  const topRight = { x: expanded.x + expanded.w, y: expanded.y };
+  const bottomRight = { x: expanded.x + expanded.w, y: expanded.y + expanded.h };
+  const bottomLeft = { x: expanded.x, y: expanded.y + expanded.h };
+
+  return (
+    pointInsideBounds(start, expanded) ||
+    pointInsideBounds(end, expanded) ||
+    segmentIntersectsSegment(start, end, topLeft, topRight) ||
+    segmentIntersectsSegment(start, end, topRight, bottomRight) ||
+    segmentIntersectsSegment(start, end, bottomRight, bottomLeft) ||
+    segmentIntersectsSegment(start, end, bottomLeft, topLeft)
+  );
+}
+
+function erasePathObject(object, start, end, radius) {
+  const threshold = radius + (object.width || 2) / 2;
+  const segments = [];
+  let currentSegment = [];
+  let changed = false;
+
+  object.points.forEach((point) => {
+    if (distanceToSegment(point, start, end) <= threshold) {
+      changed = true;
+
+      if (currentSegment.length >= 2) {
+        segments.push(currentSegment);
+      }
+
+      currentSegment = [];
+      return;
+    }
+
+    currentSegment.push(point);
+  });
+
+  if (currentSegment.length >= 2) {
+    segments.push(currentSegment);
+  }
+
+  if (!changed) {
+    return { changed: false, objects: [object] };
+  }
+
+  return {
+    changed: true,
+    objects: segments.map((points) => ({
+      ...object,
+      points,
+    })),
+  };
+}
+
+function eraseObjectsAlongSegment(start, end, width) {
+  const radius = Math.max(2, width / 2);
+  let changed = false;
+  const nextObjects = [];
+
+  objects.forEach((object) => {
+    if (object.type === 'path') {
+      const result = erasePathObject(object, start, end, radius);
+
+      changed = changed || result.changed;
+      nextObjects.push(...result.objects);
+      return;
+    }
+
+    if (object.type === 'brush') {
+      nextObjects.push(object);
+      return;
+    }
+
+    if (object.type === 'line') {
+      const threshold = radius + (object.width || 2) / 2;
+      const lineStart = { x: object.x1, y: object.y1 };
+      const lineEnd = { x: object.x2, y: object.y2 };
+
+      if (distanceBetweenSegments(start, end, lineStart, lineEnd) <= threshold) {
+        changed = true;
+        return;
+      }
+
+      nextObjects.push(object);
+      return;
+    }
+
+    if (segmentIntersectsBounds(start, end, getBounds(object), radius + (object.width || 2) / 2)) {
+      changed = true;
+      return;
+    }
+
+    nextObjects.push(object);
+  });
+
+  if (changed) {
+    objects = nextObjects;
+    selectedIndex = -1;
+  }
+
+  return changed;
+}
+
+function pointHitsBrushObject(point, object) {
+  const threshold = Math.max(6, (object.width || 2) / 2);
+
+  if (object.points.length === 1) {
+    return Math.hypot(point.x - object.points[0].x, point.y - object.points[0].y) <= threshold;
+  }
+
+  for (let index = 1; index < object.points.length; index++) {
+    if (distanceToSegment(point, object.points[index - 1], object.points[index]) <= threshold) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function hitTest(point) {
   for (let i = objects.length - 1; i >= 0; i--) {
+    if (objects[i].type === 'brush') {
+      if (pointHitsBrushObject(point, objects[i])) return -1;
+      continue;
+    }
+
     if (!isSelectableObject(objects[i])) continue;
 
     const bounds = getBounds(objects[i]);
@@ -690,6 +884,7 @@ function cancelCanvasInteraction() {
   resizeStartBounds = null;
   resizeStartObject = null;
   dragStart = null;
+  eraseChanged = false;
   canvas.style.cursor = '';
   render();
 }
