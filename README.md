@@ -1,4 +1,7 @@
-<img src="images/drawoza.png" width="38" alt="Drawoza icon">
+<div align="center">
+
+# Drawoza <img src="images/drawoza.png" width="45" alt="Drawoza icon">
+</div>
 
 Simple web drawing app made with HTML, CSS, and JavaScript.
 
