@@ -1,14 +1,23 @@
-canvas.addEventListener('pointerdown', (event) => {
-  if (event.pointerType === 'touch') {
-    activeTouchPointers.set(event.pointerId, {
-      clientX: event.clientX,
-      clientY: event.clientY,
-    });
+canvasViewport.addEventListener(
+  'pointerdown',
+  (event) => {
+    if (event.pointerType === 'touch') {
+      activeTouchPointers.set(event.pointerId, {
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
 
-    if (activeTouchPointers.size >= 2) {
-      beginViewportGesture();
-      return;
+      if (activeTouchPointers.size >= 2) {
+        beginViewportGesture();
+      }
     }
+  },
+  true
+);
+
+canvas.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && activeTouchPointers.size >= 2) {
+    return;
   }
 
   if (event.button !== 0) return;
@@ -116,17 +125,23 @@ canvas.addEventListener('pointerdown', (event) => {
   }
 });
 
-canvas.addEventListener('pointermove', (event) => {
-  if (event.pointerType === 'touch' && activeTouchPointers.has(event.pointerId)) {
-    activeTouchPointers.set(event.pointerId, {
-      clientX: event.clientX,
-      clientY: event.clientY,
-    });
+canvasViewport.addEventListener(
+  'pointermove',
+  (event) => {
+    if (event.pointerType === 'touch' && activeTouchPointers.has(event.pointerId)) {
+      activeTouchPointers.set(event.pointerId, {
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
 
-    if (updateViewportGesture()) {
-      return;
+      updateViewportGesture();
     }
-  }
+  },
+  true
+);
+
+canvas.addEventListener('pointermove', (event) => {
+  if (event.pointerType === 'touch' && viewportGesture) return;
 
   const point = pointFromEvent(event);
 
@@ -191,15 +206,21 @@ canvas.addEventListener('pointermove', (event) => {
   render();
 });
 
-canvas.addEventListener('pointerup', (event) => {
-  if (event.pointerType === 'touch') {
-    activeTouchPointers.delete(event.pointerId);
+canvasViewport.addEventListener(
+  'pointerup',
+  (event) => {
+    if (event.pointerType === 'touch') {
+      activeTouchPointers.delete(event.pointerId);
 
-    if (activeTouchPointers.size < 2) {
-      endViewportGesture();
+      if (activeTouchPointers.size < 2) {
+        endViewportGesture();
+      }
     }
-  }
+  },
+  true
+);
 
+canvas.addEventListener('pointerup', (event) => {
   if (canvas.hasPointerCapture(event.pointerId)) {
     canvas.releasePointerCapture(event.pointerId);
   }
@@ -239,15 +260,21 @@ canvas.addEventListener('pointerup', (event) => {
   }
 });
 
-canvas.addEventListener('pointercancel', (event) => {
-  if (event.pointerType === 'touch') {
-    activeTouchPointers.delete(event.pointerId);
-  }
+canvasViewport.addEventListener(
+  'pointercancel',
+  (event) => {
+    if (event.pointerType === 'touch') {
+      activeTouchPointers.delete(event.pointerId);
+    }
 
-  if (activeTouchPointers.size < 2) {
-    endViewportGesture();
-  }
+    if (activeTouchPointers.size < 2) {
+      endViewportGesture();
+    }
+  },
+  true
+);
 
+canvas.addEventListener('pointercancel', () => {
   cancelCanvasInteraction();
 });
 
