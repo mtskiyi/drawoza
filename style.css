@@ -5,36 +5,46 @@
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   font-family: "Google Sans", "Product Sans", Roboto, Arial, sans-serif;
   background: #f7f7fb;
   color: #1f1f29;
+  overscroll-behavior: none;
 }
 
 .app {
   position: relative;
   width: 100vw;
   height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .toolbar {
   position: fixed;
-  top: 18px;
+  top: max(18px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
   display: flex;
   align-items: center;
   gap: 6px;
+  max-width: calc(100vw - 24px);
   padding: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid #e7e7ef;
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(28, 28, 38, 0.12);
   backdrop-filter: blur(10px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.toolbar::-webkit-scrollbar {
+  display: none;
 }
 
 button,
@@ -58,6 +68,7 @@ button {
   min-width: 36px;
   cursor: pointer;
   font-size: 18px;
+  touch-action: manipulation;
 }
 
 button svg {
@@ -127,13 +138,48 @@ select {
   background: #e3e3eb;
 }
 
+.canvas-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  padding: 82px 18px 78px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.canvas-viewport.paper-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paper-stage {
+  position: relative;
+  width: 1600px;
+  height: 1000px;
+  margin: auto;
+  transition:
+    width 180ms ease-out,
+    height 180ms ease-out;
+}
+
+.paper-centered .paper-stage {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
 .paper-wrap {
   position: relative;
   width: 1600px;
   height: 1000px;
-  transform-origin: center center;
+  transform-origin: top left;
   transition: transform 180ms ease-out;
   box-shadow: 0 20px 60px rgba(18, 18, 28, 0.08);
+}
+
+.is-gesturing .paper-stage,
+.is-gesturing .paper-wrap {
+  transition: none;
 }
 
 #paper {
@@ -142,6 +188,7 @@ select {
   height: 1000px;
   background: #ffffff;
   cursor: crosshair;
+  touch-action: none;
 }
 
 #paper.select-mode {
@@ -169,7 +216,7 @@ select {
 .bottom-controls {
   position: fixed;
   left: 18px;
-  bottom: 18px;
+  bottom: max(18px, env(safe-area-inset-bottom));
   z-index: 10;
   display: flex;
   align-items: center;
@@ -192,7 +239,7 @@ select {
 .credit {
   position: fixed;
   right: 18px;
-  bottom: 18px;
+  bottom: max(18px, env(safe-area-inset-bottom));
   z-index: 10;
   display: inline-flex;
   align-items: center;
@@ -350,4 +397,99 @@ select {
 .project-actions #oldProjectBtn:hover {
   background: #4338ca;
   color: #ffffff;
+}
+
+@media (max-width: 720px) {
+  .toolbar {
+    top: max(10px, env(safe-area-inset-top));
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 7px;
+    border-radius: 9px;
+  }
+
+  button,
+  select,
+  input[type="number"] {
+    height: 42px;
+    border-radius: 8px;
+  }
+
+  button {
+    min-width: 42px;
+    font-size: 18px;
+  }
+
+  button svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  input[type="color"] {
+    width: 42px;
+    height: 42px;
+  }
+
+  .compact input {
+    width: 50px;
+    padding: 0 6px;
+    text-align: center;
+  }
+
+  select {
+    width: 116px;
+  }
+
+  .separator {
+    height: 30px;
+    margin: 0 2px;
+  }
+
+  .canvas-viewport {
+    padding: 70px 12px 82px;
+  }
+
+  .bottom-controls {
+    left: 50%;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    padding: 7px;
+  }
+
+  #zoomLabel {
+    min-width: 48px;
+  }
+
+  .credit {
+    display: none;
+  }
+
+  .context-menu {
+    min-width: 170px;
+  }
+
+  .context-menu button {
+    height: 42px;
+    font-size: 15px;
+  }
+
+  .project-prompt {
+    align-items: flex-end;
+    padding: 12px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .project-dialog {
+    width: 100%;
+  }
+
+  .project-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .project-actions button {
+    min-width: 0;
+    height: 44px;
+  }
 }

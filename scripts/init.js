@@ -1,6 +1,7 @@
 async function initializeApp() {
   await loadDrawingFromStorage();
-  setZoom(1);
+  setZoom(getFitZoom());
+  centerPaper();
   render();
   updateUndoRedoButtons();
 }

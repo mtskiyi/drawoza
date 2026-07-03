@@ -1,4 +1,16 @@
 canvas.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch') {
+    activeTouchPointers.set(event.pointerId, {
+      clientX: event.clientX,
+      clientY: event.clientY,
+    });
+
+    if (activeTouchPointers.size >= 2) {
+      beginViewportGesture();
+      return;
+    }
+  }
+
   if (event.button !== 0) return;
 
   hideContextMenu();
@@ -105,6 +117,17 @@ canvas.addEventListener('pointerdown', (event) => {
 });
 
 canvas.addEventListener('pointermove', (event) => {
+  if (event.pointerType === 'touch' && activeTouchPointers.has(event.pointerId)) {
+    activeTouchPointers.set(event.pointerId, {
+      clientX: event.clientX,
+      clientY: event.clientY,
+    });
+
+    if (updateViewportGesture()) {
+      return;
+    }
+  }
+
   const point = pointFromEvent(event);
 
   if (
@@ -169,6 +192,14 @@ canvas.addEventListener('pointermove', (event) => {
 });
 
 canvas.addEventListener('pointerup', (event) => {
+  if (event.pointerType === 'touch') {
+    activeTouchPointers.delete(event.pointerId);
+
+    if (activeTouchPointers.size < 2) {
+      endViewportGesture();
+    }
+  }
+
   if (canvas.hasPointerCapture(event.pointerId)) {
     canvas.releasePointerCapture(event.pointerId);
   }
@@ -206,6 +237,18 @@ canvas.addEventListener('pointerup', (event) => {
     saveHistory();
     render();
   }
+});
+
+canvas.addEventListener('pointercancel', (event) => {
+  if (event.pointerType === 'touch') {
+    activeTouchPointers.delete(event.pointerId);
+  }
+
+  if (activeTouchPointers.size < 2) {
+    endViewportGesture();
+  }
+
+  cancelCanvasInteraction();
 });
 
 canvas.addEventListener('dblclick', (event) => {
@@ -288,7 +331,16 @@ window.addEventListener('pointerdown', (event) => {
   }
 });
 
-window.addEventListener('resize', hideContextMenu);
+window.addEventListener('resize', () => {
+  hideContextMenu();
+
+  const fitZoom = getFitZoom();
+
+  if (zoom <= fitZoom + 0.02) {
+    setZoom(fitZoom);
+    centerPaper();
+  }
+});
 window.addEventListener('blur', hideContextMenu);
 
 document.querySelectorAll('.tool').forEach((button) => {

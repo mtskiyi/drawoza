@@ -571,10 +571,181 @@ function commitTextEditor() {
 }
 
 function setZoom(nextZoom) {
+  const previousZoom = zoom;
+
   zoom = Math.min(maxZoom, Math.max(minZoom, nextZoom));
 
+  const previousCenter = {
+    x: (canvasViewport.scrollLeft + canvasViewport.clientWidth / 2) / previousZoom,
+    y: (canvasViewport.scrollTop + canvasViewport.clientHeight / 2) / previousZoom,
+  };
+
+  paperStage.style.width = `${canvas.width * zoom}px`;
+  paperStage.style.height = `${canvas.height * zoom}px`;
   paperWrap.style.transform = `scale(${zoom})`;
   zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+
+  if (updatePaperPlacement()) {
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    canvasViewport.scrollLeft =
+      previousCenter.x * zoom - canvasViewport.clientWidth / 2;
+    canvasViewport.scrollTop =
+      previousCenter.y * zoom - canvasViewport.clientHeight / 2;
+  });
+}
+
+function getViewportContentSize() {
+  const viewportWidth = canvasViewport.clientWidth || window.innerWidth;
+  const viewportHeight = canvasViewport.clientHeight || window.innerHeight;
+  const style = getComputedStyle(canvasViewport);
+  const horizontalPadding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const verticalPadding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+
+  return {
+    width: Math.max(1, viewportWidth - horizontalPadding),
+    height: Math.max(1, viewportHeight - verticalPadding),
+  };
+}
+
+function updatePaperPlacement() {
+  const contentSize = getViewportContentSize();
+  const paperFits =
+    canvas.width * zoom <= contentSize.width &&
+    canvas.height * zoom <= contentSize.height;
+
+  canvasViewport.classList.toggle('paper-centered', paperFits);
+
+  if (paperFits) {
+    canvasViewport.scrollLeft = 0;
+    canvasViewport.scrollTop = 0;
+  }
+
+  return paperFits;
+}
+
+function getFitZoom() {
+  const availableSize = getViewportContentSize();
+
+  return Math.min(
+    1,
+    Math.max(
+      minZoom,
+      Math.min(availableSize.width / canvas.width, availableSize.height / canvas.height)
+    )
+  );
+}
+
+function centerPaper() {
+  if (updatePaperPlacement()) return;
+
+  requestAnimationFrame(() => {
+    canvasViewport.scrollLeft =
+      (paperStage.offsetWidth - canvasViewport.clientWidth) / 2;
+    canvasViewport.scrollTop =
+      (paperStage.offsetHeight - canvasViewport.clientHeight) / 2;
+  });
+}
+
+function getTouchGestureState() {
+  const points = Array.from(activeTouchPointers.values());
+
+  if (points.length < 2) return null;
+
+  const [first, second] = points;
+  const center = {
+    x: (first.clientX + second.clientX) / 2,
+    y: (first.clientY + second.clientY) / 2,
+  };
+
+  return {
+    center,
+    distance: Math.hypot(
+      second.clientX - first.clientX,
+      second.clientY - first.clientY
+    ),
+  };
+}
+
+function cancelCanvasInteraction() {
+  activeTouchPointers.forEach((_, pointerId) => {
+    if (canvas.hasPointerCapture(pointerId)) {
+      canvas.releasePointerCapture(pointerId);
+    }
+  });
+
+  currentObject = null;
+  isDrawing = false;
+  isMoving = false;
+  isPlacingText = false;
+  isResizing = false;
+  resizeStartBounds = null;
+  resizeStartObject = null;
+  dragStart = null;
+  canvas.style.cursor = '';
+  render();
+}
+
+function beginViewportGesture() {
+  const gestureState = getTouchGestureState();
+
+  if (!gestureState) return;
+
+  canvasViewport.classList.add('is-gesturing');
+  commitTextEditor();
+  hideContextMenu();
+  cancelCanvasInteraction();
+
+  viewportGesture = {
+    ...gestureState,
+    zoom,
+    scrollLeft: canvasViewport.scrollLeft,
+    scrollTop: canvasViewport.scrollTop,
+  };
+}
+
+function updateViewportGesture() {
+  if (!viewportGesture) return false;
+
+  const gestureState = getTouchGestureState();
+
+  if (!gestureState) return false;
+
+  const startDistance = Math.max(1, viewportGesture.distance);
+  const nextZoom = viewportGesture.zoom * (gestureState.distance / startDistance);
+  const rect = canvasViewport.getBoundingClientRect();
+  const focusX =
+    (viewportGesture.scrollLeft + viewportGesture.center.x - rect.left) /
+    viewportGesture.zoom;
+  const focusY =
+    (viewportGesture.scrollTop + viewportGesture.center.y - rect.top) /
+    viewportGesture.zoom;
+  const centerDx = gestureState.center.x - viewportGesture.center.x;
+  const centerDy = gestureState.center.y - viewportGesture.center.y;
+
+  zoom = Math.min(maxZoom, Math.max(minZoom, nextZoom));
+  paperStage.style.width = `${canvas.width * zoom}px`;
+  paperStage.style.height = `${canvas.height * zoom}px`;
+  paperWrap.style.transform = `scale(${zoom})`;
+  zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+
+  if (updatePaperPlacement()) {
+    return true;
+  }
+
+  canvasViewport.scrollLeft =
+    focusX * zoom - (viewportGesture.center.x - rect.left) - centerDx;
+  canvasViewport.scrollTop =
+    focusY * zoom - (viewportGesture.center.y - rect.top) - centerDy;
+
+  return true;
+}
+
+function endViewportGesture() {
+  viewportGesture = null;
+  canvasViewport.classList.remove('is-gesturing');
 }
 
 function copySelection() {

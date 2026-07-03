@@ -1,6 +1,8 @@
 const canvas = document.getElementById('paper');
 const ctx = canvas.getContext('2d');
 
+const canvasViewport = document.getElementById('canvasViewport');
+const paperStage = document.getElementById('paperStage');
 const paperWrap = document.getElementById('paperWrap');
 const textEditor = document.getElementById('textEditor');
 const toolbar = document.querySelector('.toolbar');
@@ -37,8 +39,10 @@ let currentObject = null;
 let resizeStartBounds = null;
 let resizeStartObject = null;
 let editingTextIndex = -1;
+let activeTouchPointers = new Map();
+let viewportGesture = null;
 
-const minZoom = 0.25;
+const minZoom = 0.18;
 const maxZoom = 2.5;
 const zoomStep = 0.1;
 const maxImportedImageSize = 520;
