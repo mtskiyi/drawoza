@@ -1,4 +1,12 @@
-# Drawoza
+<p align="center">
+  <img src="images/drawoza.png" width="90" alt="Drawoza icon">
+</p>
+
+<h1 align="center">Drawoza</h1>
+
+<p align="center">
+  Draw anything, simply.
+</p>
 
 Simple web drawing app made with HTML, CSS, and JavaScript.
 
