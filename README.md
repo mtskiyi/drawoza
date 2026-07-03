@@ -1,7 +1,4 @@
-<h1 align="center">
-  Drawoza
-  <img src="images/drawoza.png" width="38" align="bottom" alt="Drawoza icon">
-</h1>
+<img src="images/drawoza.png" width="38" alt="Drawoza icon">
 
 Simple web drawing app made with HTML, CSS, and JavaScript.
 
